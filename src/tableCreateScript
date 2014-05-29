@@ -1,0 +1,13 @@
+create table temp_batting (col_value STRING);
+
+Load data inpath '/user/hue/Batting.csv' OVERWRITE INTO TABLE temp_batting;
+
+create table batting (player_id STRING, year INT, runs INT);
+
+
+insert overwrite table batting
+select
+	regexp_extract(col_value, '^(?:([^,]*)\,?){1}', 1) player_id,
+	regexp_extract(col_value, '^(?:([^,]*)\,?){2}', 1) year,
+	regexp_extract(col_value, '^(?:([^,]*)\,?){9}', 1) run
+from default.temp_batting;
