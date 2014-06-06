@@ -7,6 +7,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.chain.ChainMapper;
+import org.apache.hadoop.mapreduce.lib.chain.ChainReducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -22,8 +24,26 @@ public class WordCounts extends Configured implements Tool{
 		Job job = new Job(conf, "WordCount");
 		
 		job.setJarByClass(WordCounts.class);
-		job.setMapperClass(WordCountNewMapper.class);
-		job.setReducerClass(WordCountNewReducer.class);
+		
+		//job.setMapperClass(WordCountNewMapper.class);
+		Configuration confM1 = new Configuration(false);
+		ChainMapper.addMapper(job, WordCountNewMapper.class, LongWritable.class, Text.class, 
+				Text.class, IntWritable.class, confM1);
+		
+		Configuration confM2 = new Configuration(false);
+		ChainMapper.addMapper(job, WordCountNewMapper2.class,Text.class, IntWritable.class, 
+				Text.class, IntWritable.class, confM2);
+		
+		//job.setCombinerClass(WordCountNewReducer.class);
+		//job.setReducerClass(WordCountNewReducer.class);
+		Configuration confR1 = new Configuration(false);
+		ChainReducer.setReducer(job,WordCountNewReducer.class, Text.class, IntWritable.class, 
+				Text.class, IntWritable.class, confR1 );
+		
+		Configuration confM3 = new Configuration(false);
+		ChainReducer.addMapper(job, WordCountNewMapper3.class,Text.class, IntWritable.class, 
+				Text.class, IntWritable.class, confM3);
+		
 		
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(IntWritable.class);
